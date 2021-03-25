@@ -19,6 +19,8 @@ var (
 	TEST_TEMP_BOOL_FALSE bool
 	TEST_STRINGLIST      []string
 	TEST_INTLIST         []int
+	TEST_FLOAT32         float32
+	TEST_FLOAT64         float64
 )
 
 var (
@@ -30,6 +32,8 @@ var (
 	boolMap       map[string]bool
 	stringListMap map[string][]string
 	intListMap    map[string][]int
+	float32Map    map[string]float32
+	float64Map    map[string]float64
 )
 
 func init() {
@@ -42,6 +46,8 @@ func init() {
 	boolMap = multiConfig.ConfigBool.ParseConfig()
 	stringListMap = multiConfig.ConfigStringList.ParseConfig()
 	intListMap = multiConfig.ConfigIntList.ParseConfig()
+	float32Map = multiConfig.ConfigFloat32.ParseConfig()
+	float64Map = multiConfig.ConfigFloat64.ParseConfig()
 }
 
 func outputConfig() {
@@ -82,7 +88,9 @@ func outputConfig() {
 	TEST_TEMP_BOOL_FALSE = boolMap["TEST_TEMP_BOOL_FALSE"]
 	TEST_STRINGLIST = stringListMap["TEST_STRINGLIST"]
 	TEST_INTLIST = intListMap["TEST_INTLIST"]
-	fmt.Printf(" TEST_INT: %v\n TEST_TEMP_INT:%v\n TEST_INT64:%v\n TEST_STRING:%v\n TEST_BOOL:%v\n TEST_STRINGLIST:%v\n TEST_INTLIST:%v\n",
+	TEST_FLOAT32 = float32Map["TEST_FLOAT32"]
+	TEST_FLOAT64 = float64Map["TEST_FLOAT64"]
+	fmt.Printf(" TEST_INT: %v\n TEST_TEMP_INT:%v\n TEST_INT64:%v\n TEST_STRING:%v\n TEST_BOOL:%v\n TEST_STRINGLIST:%v\n TEST_INTLIST:%v\n TEST_FLOAT32:%v\n TEST_FLOAT64:%v\n",
 		TEST_INT,
 		TEST_TEMP_INT,
 		TEST_INT64,
@@ -90,6 +98,8 @@ func outputConfig() {
 		TEST_BOOL,
 		TEST_STRINGLIST,
 		TEST_INTLIST,
+		TEST_FLOAT32,
+		TEST_FLOAT64,
 	)
 }
 

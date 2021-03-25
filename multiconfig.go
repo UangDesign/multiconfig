@@ -30,6 +30,8 @@ const (
 	CFG_UINT64     ConfigType = "sectionUint64"
 	CFG_STRINGLIST ConfigType = "sectionStringList" // etc: [one,two,three]
 	CFG_INTLIST    ConfigType = "sectionIntList"    // etc: [1,2,3]
+	CFG_FLOAT32    ConfigType = "sectionFloat32"
+	CFG_FLOAT64    ConfigType = "sectionFloat64"
 )
 
 var (
@@ -68,15 +70,23 @@ type configIntList struct {
 	config map[string][]int
 }
 
+type configFloat32 struct {
+	config map[string]float32
+}
+
+type configFloat64 struct {
+	config map[string]float64
+}
+
 // parseConfig is used to parse the string configuration
 func (c *configString) ParseConfig() map[string]string {
-	return getSection(cfg, CFG_STRING)
+	return getSection(CFG_STRING)
 }
 
 // parseConfig is used to parse the bool configuration
 func (c *configBool) ParseConfig() map[string]bool {
 	ret := make(map[string]bool)
-	for k, v := range getSection(cfg, CFG_BOOL) {
+	for k, v := range getSection(CFG_BOOL) {
 		if vb, err := strconv.ParseBool(v); err == nil {
 			ret[k] = vb
 		}
@@ -87,7 +97,7 @@ func (c *configBool) ParseConfig() map[string]bool {
 // parseConfig is used to parse the int configuration
 func (c *configInt) ParseConfig() map[string]int {
 	ret := make(map[string]int)
-	for k, v := range getSection(cfg, CFG_INT) {
+	for k, v := range getSection(CFG_INT) {
 		if vInt, err := strconv.Atoi(v); err == nil {
 			ret[k] = vInt
 		}
@@ -98,7 +108,7 @@ func (c *configInt) ParseConfig() map[string]int {
 // parseConfig is used to parse the uint configuration
 func (c *configUint) ParseConfig() map[string]uint {
 	ret := make(map[string]uint)
-	for k, v := range getSection(cfg, CFG_UINT) {
+	for k, v := range getSection(CFG_UINT) {
 		if vUint, err := strconv.ParseUint(v, 10, 0); err == nil {
 			ret[k] = uint(vUint)
 		}
@@ -109,7 +119,7 @@ func (c *configUint) ParseConfig() map[string]uint {
 // parseConfig is used to parse the int64 configuration
 func (c *configInt64) ParseConfig() map[string]int64 {
 	ret := make(map[string]int64)
-	for k, v := range getSection(cfg, CFG_INT64) {
+	for k, v := range getSection(CFG_INT64) {
 		if vInt64, err := strconv.ParseInt(v, 10, 0); err == nil {
 			ret[k] = vInt64
 		}
@@ -120,7 +130,7 @@ func (c *configInt64) ParseConfig() map[string]int64 {
 // parseConfig is used to parse the uint64 configuration
 func (c *configUint64) ParseConfig() map[string]uint64 {
 	ret := make(map[string]uint64)
-	for k, v := range getSection(cfg, CFG_UINT64) {
+	for k, v := range getSection(CFG_UINT64) {
 		if vUint, err := strconv.ParseUint(v, 10, 0); err == nil {
 			ret[k] = vUint
 		}
@@ -128,7 +138,7 @@ func (c *configUint64) ParseConfig() map[string]uint64 {
 	return ret
 }
 
-func getSection(cfg *goconfig.ConfigFile, configType ConfigType) map[string]string {
+func getSection(configType ConfigType) map[string]string {
 	configMap, err := cfg.GetSection(string(configType))
 	if err != nil {
 		fmt.Printf(fmt.Sprintf("sectionString parseFailed, err is:%v\n", err))
@@ -139,7 +149,7 @@ func getSection(cfg *goconfig.ConfigFile, configType ConfigType) map[string]stri
 // parseConfig is used to parse the []string configuration
 func (c *configStringList) ParseConfig() map[string][]string {
 	ret := make(map[string][]string)
-	for k, v := range getSection(cfg, CFG_STRINGLIST) {
+	for k, v := range getSection(CFG_STRINGLIST) {
 		if isList(v) {
 			if trimBracket(&v); v != "" {
 				vList := strings.Split(v, ",")
@@ -155,7 +165,7 @@ func (c *configStringList) ParseConfig() map[string][]string {
 // parseConfig is used to parse the []int configuration
 func (c *configIntList) ParseConfig() map[string][]int {
 	ret := make(map[string][]int)
-	for k, v := range getSection(cfg, CFG_INTLIST) {
+	for k, v := range getSection(CFG_INTLIST) {
 		if isList(v) {
 			if trimBracket(&v); v != "" {
 				vList := strings.Split(v, ",")
@@ -163,6 +173,28 @@ func (c *configIntList) ParseConfig() map[string][]int {
 					ret[k] = trimSpaceToIntList(vList)
 				}
 			}
+		}
+	}
+	return ret
+}
+
+// parseConfig is used to parse the float32 configuration
+func (c *configFloat32) ParseConfig() map[string]float32 {
+	ret := make(map[string]float32)
+	for k, v := range getSection(CFG_FLOAT32) {
+		if vFloat32, err := strconv.ParseFloat(v, 32); err == nil {
+			ret[k] = float32(vFloat32)
+		}
+	}
+	return ret
+}
+
+// parseConfig is used to parse the float64 configuration
+func (c *configFloat64) ParseConfig() map[string]float64 {
+	ret := make(map[string]float64)
+	for k, v := range getSection(CFG_FLOAT64) {
+		if vFloat64, err := strconv.ParseFloat(v, 64); err == nil {
+			ret[k] = vFloat64
 		}
 	}
 	return ret
@@ -213,6 +245,8 @@ type MultiConfig struct {
 	ConfigUint64     *configUint64
 	ConfigStringList *configStringList
 	ConfigIntList    *configIntList
+	ConfigFloat32    *configFloat32
+	ConfigFloat64    *configFloat64
 }
 
 func NewMultiConfig(confPath string, moreConf ...string) (multiConfig *MultiConfig) {
