@@ -1,273 +1,193 @@
 package multiconfig
 
-import (
-	"fmt"
-	"strconv"
-	"strings"
-
-	"github.com/Unknwon/goconfig"
-)
-
-/*
-	support type：
-		int,int16,int32,int64,int8
-		uint,uint16,uint32,uint64,uint8
-		float32,float64
-		string
-		bool
-		[]int
-		[]string
-*/
-
-type ConfigType string
-
-const (
-	CFG_STRING     ConfigType = "sectionString"
-	CFG_BOOL       ConfigType = "sectionBool"
-	CFG_INT        ConfigType = "sectionInt"
-	CFG_UINT       ConfigType = "sectionUint"
-	CFG_INT64      ConfigType = "sectionInt64"
-	CFG_UINT64     ConfigType = "sectionUint64"
-	CFG_STRINGLIST ConfigType = "sectionStringList" // etc: [one,two,three]
-	CFG_INTLIST    ConfigType = "sectionIntList"    // etc: [1,2,3]
-	CFG_FLOAT32    ConfigType = "sectionFloat32"
-	CFG_FLOAT64    ConfigType = "sectionFloat64"
-)
-
-var (
-	cfg *goconfig.ConfigFile
-)
-
-type configString struct {
-	config map[string]string
-}
-
-type configBool struct {
-	config map[string]bool
-}
-
-type configInt struct {
-	config map[string]int
-}
-
-type configInt64 struct {
-	config map[string]int64
-}
-
-type configUint struct {
-	config map[string]uint
-}
-
-type configUint64 struct {
-	config map[string]uint64
-}
-
-type configStringList struct {
-	config map[string][]string
-}
-
-type configIntList struct {
-	config map[string][]int
-}
-
-type configFloat32 struct {
-	config map[string]float32
-}
-
-type configFloat64 struct {
-	config map[string]float64
-}
-
-// parseConfig is used to parse the string configuration
-func (c *configString) ParseConfig() map[string]string {
-	return getSection(CFG_STRING)
-}
-
-// parseConfig is used to parse the bool configuration
-func (c *configBool) ParseConfig() map[string]bool {
-	ret := make(map[string]bool)
-	for k, v := range getSection(CFG_BOOL) {
-		if vb, err := strconv.ParseBool(v); err == nil {
-			ret[k] = vb
-		}
-	}
-	return ret
-}
-
-// parseConfig is used to parse the int configuration
-func (c *configInt) ParseConfig() map[string]int {
-	ret := make(map[string]int)
-	for k, v := range getSection(CFG_INT) {
-		if vInt, err := strconv.Atoi(v); err == nil {
-			ret[k] = vInt
-		}
-	}
-	return ret
-}
-
-// parseConfig is used to parse the uint configuration
-func (c *configUint) ParseConfig() map[string]uint {
-	ret := make(map[string]uint)
-	for k, v := range getSection(CFG_UINT) {
-		if vUint, err := strconv.ParseUint(v, 10, 0); err == nil {
-			ret[k] = uint(vUint)
-		}
-	}
-	return ret
-}
-
-// parseConfig is used to parse the int64 configuration
-func (c *configInt64) ParseConfig() map[string]int64 {
-	ret := make(map[string]int64)
-	for k, v := range getSection(CFG_INT64) {
-		if vInt64, err := strconv.ParseInt(v, 10, 0); err == nil {
-			ret[k] = vInt64
-		}
-	}
-	return ret
-}
-
-// parseConfig is used to parse the uint64 configuration
-func (c *configUint64) ParseConfig() map[string]uint64 {
-	ret := make(map[string]uint64)
-	for k, v := range getSection(CFG_UINT64) {
-		if vUint, err := strconv.ParseUint(v, 10, 0); err == nil {
-			ret[k] = vUint
-		}
-	}
-	return ret
-}
-
-func getSection(configType ConfigType) map[string]string {
-	configMap, err := cfg.GetSection(string(configType))
-	if err != nil {
-		fmt.Printf(fmt.Sprintf("sectionString parseFailed, err is:%v\n", err))
-	}
-	return configMap
-}
-
-// parseConfig is used to parse the []string configuration
-func (c *configStringList) ParseConfig() map[string][]string {
-	ret := make(map[string][]string)
-	for k, v := range getSection(CFG_STRINGLIST) {
-		if isList(v) {
-			if trimBracket(&v); v != "" {
-				vList := strings.Split(v, ",")
-				if len(vList) > 0 {
-					ret[k] = trimSpace(vList)
-				}
-			}
-		}
-	}
-	return ret
-}
-
-// parseConfig is used to parse the []int configuration
-func (c *configIntList) ParseConfig() map[string][]int {
-	ret := make(map[string][]int)
-	for k, v := range getSection(CFG_INTLIST) {
-		if isList(v) {
-			if trimBracket(&v); v != "" {
-				vList := strings.Split(v, ",")
-				if len(vList) > 0 {
-					ret[k] = trimSpaceToIntList(vList)
-				}
-			}
-		}
-	}
-	return ret
-}
-
-// parseConfig is used to parse the float32 configuration
-func (c *configFloat32) ParseConfig() map[string]float32 {
-	ret := make(map[string]float32)
-	for k, v := range getSection(CFG_FLOAT32) {
-		if vFloat32, err := strconv.ParseFloat(v, 32); err == nil {
-			ret[k] = float32(vFloat32)
-		}
-	}
-	return ret
-}
-
-// parseConfig is used to parse the float64 configuration
-func (c *configFloat64) ParseConfig() map[string]float64 {
-	ret := make(map[string]float64)
-	for k, v := range getSection(CFG_FLOAT64) {
-		if vFloat64, err := strconv.ParseFloat(v, 64); err == nil {
-			ret[k] = vFloat64
-		}
-	}
-	return ret
-}
-
-// isList determine if it is a list
-func isList(list string) (is bool) {
-	if strings.HasPrefix(list, "[") && strings.HasSuffix(list, "]") {
-		is = true
-	} else {
-		is = false
-	}
-	return is
-}
-
-func trimBracket(list *string) {
-	*list = strings.TrimRight(strings.TrimLeft(*list, "["), "]")
-}
-
-func trimSpaceToIntList(stringList []string) (ret []int) {
-	ret = make([]int, 0)
-	for _, v := range stringList {
-		if v = strings.Trim(v, " "); v != "" {
-			if vInt, err := strconv.Atoi(v); err == nil {
-				ret = append(ret, vInt)
-			}
-		}
-	}
-	return ret
-}
-
-func trimSpace(stringList []string) (ret []string) {
-	ret = make([]string, 0)
-	for _, v := range stringList {
-		if v = strings.Trim(v, " "); v != "" {
-			ret = append(ret, v)
-		}
-	}
-	return ret
-}
+import "github.com/UangDesign/multiconfig/singleconfig"
 
 type MultiConfig struct {
-	ConfigString     *configString
-	ConfigBool       *configBool
-	ConfigInt        *configInt
-	ConfigUint       *configUint
-	ConfigInt64      *configInt64
-	ConfigUint64     *configUint64
-	ConfigStringList *configStringList
-	ConfigIntList    *configIntList
-	ConfigFloat32    *configFloat32
-	ConfigFloat64    *configFloat64
+	multiConfig      []singleconfig.SingleConfig
+	configString     map[string]string
+	configBool       map[string]bool
+	configInt        map[string]int
+	configInt64      map[string]int64
+	configUint       map[string]uint
+	configUint64     map[string]uint64
+	configFloat32    map[string]float32
+	configFloat64    map[string]float64
+	configStringList map[string][]string
+	configIntList    map[string][]int
 }
 
-func NewMultiConfig(confPath string, moreConf ...string) (multiConfig *MultiConfig) {
+func NewMultiConfig(confPath string, moreConf ...string) (config *MultiConfig) {
 	if len(confPath) < 1 {
-		multiConfig = nil
+		config = nil
 	} else {
-		cfg = getConfHandler(confPath, moreConf...)
-		multiConfig = &MultiConfig{
-			ConfigString: new(configString),
-			ConfigBool:   new(configBool),
-			ConfigInt:    new(configInt),
-			ConfigInt64:  new(configInt64),
+		config = &MultiConfig{
+			multiConfig:      make([]singleconfig.SingleConfig, 0),
+			configString:     make(map[string]string),
+			configBool:       make(map[string]bool),
+			configInt:        make(map[string]int),
+			configInt64:      make(map[string]int64),
+			configUint:       make(map[string]uint),
+			configUint64:     make(map[string]uint64),
+			configFloat32:    make(map[string]float32),
+			configFloat64:    make(map[string]float64),
+			configStringList: make(map[string][]string),
+			configIntList:    make(map[string][]int),
+		}
+		// confPath
+		oSingleConfig := singleconfig.NewSingleConfig(confPath)
+		if oSingleConfig != nil {
+			config.multiConfig = append(config.multiConfig, *oSingleConfig)
+		}
+		// moreConf
+		for i := range moreConf {
+			oSingleConfig := singleconfig.NewSingleConfig(moreConf[i])
+			if oSingleConfig != nil {
+				config.multiConfig = append(config.multiConfig, *oSingleConfig)
+			}
+		}
+	}
+	return config
+}
+
+func (m *MultiConfig) ParseString() map[string]string {
+	for _, singleConfig := range m.multiConfig {
+		for k, v := range singleConfig.ConfigString.ParseConfig(singleConfig.GetConfigFile()) {
+			m.configString[k] = v
+		}
+	}
+	return m.configString
+}
+
+func (m *MultiConfig) ParseBool() map[string]bool {
+	for _, singleConfig := range m.multiConfig {
+		for k, v := range singleConfig.ConfigBool.ParseConfig(singleConfig.GetConfigFile()) {
+			m.configBool[k] = v
+		}
+	}
+	return m.configBool
+}
+
+func (m *MultiConfig) ParseInt() map[string]int {
+	for _, singleConfig := range m.multiConfig {
+		for k, v := range singleConfig.ConfigInt.ParseConfig(singleConfig.GetConfigFile()) {
+			m.configInt[k] = v
+		}
+	}
+	return m.configInt
+}
+
+func (m *MultiConfig) ParseInt64() map[string]int64 {
+	for _, singleConfig := range m.multiConfig {
+		for k, v := range singleConfig.ConfigInt64.ParseConfig(singleConfig.GetConfigFile()) {
+			m.configInt64[k] = v
+		}
+	}
+	return m.configInt64
+}
+
+func (m *MultiConfig) ParseUint() map[string]uint {
+	for _, singleConfig := range m.multiConfig {
+		for k, v := range singleConfig.ConfigUint.ParseConfig(singleConfig.GetConfigFile()) {
+			m.configUint[k] = v
+		}
+	}
+	return m.configUint
+}
+
+func (m *MultiConfig) ParseUint64() map[string]uint64 {
+	for _, singleConfig := range m.multiConfig {
+		for k, v := range singleConfig.ConfigUint64.ParseConfig(singleConfig.GetConfigFile()) {
+			m.configUint64[k] = v
+		}
+	}
+	return m.configUint64
+}
+
+func (m *MultiConfig) ParseFloat32() map[string]float32 {
+	for _, singleConfig := range m.multiConfig {
+		for k, v := range singleConfig.ConfigFloat32.ParseConfig(singleConfig.GetConfigFile()) {
+			m.configFloat32[k] = v
+		}
+	}
+	return m.configFloat32
+}
+
+func (m *MultiConfig) ParseFloat64() map[string]float64 {
+	for _, singleConfig := range m.multiConfig {
+		for k, v := range singleConfig.ConfigFloat64.ParseConfig(singleConfig.GetConfigFile()) {
+			m.configFloat64[k] = v
+		}
+	}
+	return m.configFloat64
+}
+
+func (m *MultiConfig) ParseStringList() map[string][]string {
+	for _, singleConfig := range m.multiConfig {
+		for k, v := range singleConfig.ConfigStringList.ParseConfig(singleConfig.GetConfigFile()) {
+			m.configStringList[k] = v
+		}
+	}
+	return m.configStringList
+}
+func (m *MultiConfig) ParseIntList() map[string][]int {
+	for _, singleConfig := range m.multiConfig {
+		for k, v := range singleConfig.ConfigIntList.ParseConfig(singleConfig.GetConfigFile()) {
+			m.configIntList[k] = v
+		}
+	}
+	return m.configIntList
+}
+
+func (m *MultiConfig) SetValue(key string, value interface{}, filePath string) (err error) {
+	var valueType string
+	if filePath != "" {
+		for _, singleConfig := range m.multiConfig {
+			if singleConfig.GetConfPath() == filePath {
+				valueType, err = singleConfig.SetValue(key, value)
+			}
+		}
+	} else {
+		for _, singleConfig := range m.multiConfig {
+			if singleConfig.HasKey(key) {
+				valueType, err = singleConfig.SetValue(key, value)
+			}
+		}
+	}
+	m.reLoadConfig(valueType)
+	return err
+}
+
+func (m *MultiConfig) FlushToConfig() (err error) {
+	for _, singleConfig := range m.multiConfig {
+		err = singleConfig.FlushToConfig()
+		if err != nil {
+			break
 		}
 	}
 	return
 }
 
-func getConfHandler(filename string, moreConf ...string) (cfg *goconfig.ConfigFile) {
-	cfg, err := goconfig.LoadConfigFile(filename, moreConf...)
-	if err != nil {
-		panic(fmt.Sprintf("getcfg failed err is:%v", err))
+func (m *MultiConfig) reLoadConfig(valueType string) {
+	switch valueType {
+	case "string":
+		m.ParseString()
+	case "bool":
+		m.ParseBool()
+	case "int":
+		m.ParseInt()
+	case "int64":
+		m.ParseInt64()
+	case "uint":
+		m.ParseUint()
+	case "uint64":
+		m.ParseUint64()
+	case "float32":
+		m.ParseFloat32()
+	case "float64":
+		m.ParseFloat64()
+	case "[]string":
+		m.ParseStringList()
+	case "[]int":
+		m.ParseIntList()
 	}
-	return cfg
 }

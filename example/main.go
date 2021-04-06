@@ -36,18 +36,21 @@ var (
 	float64Map    map[string]float64
 )
 
+var multiConfig *multiconfig.MultiConfig
+
 func init() {
-	multiConfig := multiconfig.NewMultiConfig("D:/git/multiconfig/example/config.conf", "D:/git/multiconfig/example/temp.conf")
-	intMap = multiConfig.ConfigInt.ParseConfig()
-	int64Map = multiConfig.ConfigInt64.ParseConfig()
-	uintMap = multiConfig.ConfigUint.ParseConfig()
-	uint64Map = multiConfig.ConfigUint64.ParseConfig()
-	stringMap = multiConfig.ConfigString.ParseConfig()
-	boolMap = multiConfig.ConfigBool.ParseConfig()
-	stringListMap = multiConfig.ConfigStringList.ParseConfig()
-	intListMap = multiConfig.ConfigIntList.ParseConfig()
-	float32Map = multiConfig.ConfigFloat32.ParseConfig()
-	float64Map = multiConfig.ConfigFloat64.ParseConfig()
+	multiConfig = multiconfig.NewMultiConfig("D:/go/src/multiconfig/example/config.conf", "D:/go/src/multiconfig/example/temp.conf")
+	//multiConfig = multiconfig.NewMultiConfig("D:/git/multiconfig/example/config.conf")
+	intMap = multiConfig.ParseInt()
+	int64Map = multiConfig.ParseInt64()
+	uintMap = multiConfig.ParseUint()
+	uint64Map = multiConfig.ParseUint64()
+	stringMap = multiConfig.ParseString()
+	boolMap = multiConfig.ParseBool()
+	stringListMap = multiConfig.ParseStringList()
+	intListMap = multiConfig.ParseIntList()
+	float32Map = multiConfig.ParseFloat32()
+	float64Map = multiConfig.ParseFloat64()
 }
 
 func outputConfig() {
@@ -103,6 +106,16 @@ func outputConfig() {
 	)
 }
 
+func SetConfig() {
+	multiConfig.SetValue("TEST_INT", 37, "")
+	fmt.Printf("Change TEST_INT from %v to %v\n", TEST_INT, intMap["TEST_INT"])
+	// save config to conf
+	multiConfig.SetValue("TEST_INTLIST", []int{7, 8, 9, 10}, "")
+	fmt.Printf("Change TEST_INT from %v to %v\n", TEST_INTLIST, intListMap["TEST_INTLIST"])
+	multiConfig.FlushToConfig()
+}
+
 func main() {
 	outputConfig()
+	SetConfig()
 }
