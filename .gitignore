@@ -16,3 +16,6 @@
 
 # debug 
 __debug__
+
+# goland
+/.idea/
