@@ -105,7 +105,9 @@ type configFloat64 struct {
 
 // parseConfig is used to parse the string configuration
 func (c *configString) ParseConfig(cfg *goconfig.ConfigFile) map[string]string {
-	c.config = getSection(CFG_STRING, cfg)
+	for k, v := range getSection(CFG_STRING, cfg) {
+		c.config[k] = v
+	}
 	return c.config
 }
 

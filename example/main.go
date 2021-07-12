@@ -107,11 +107,14 @@ func outputConfig() {
 }
 
 func SetConfig() {
-	multiConfig.SetValue("TEST_INT", 37, "")
+	multiConfig.SetValue("TEST_INT", 38, "")
 	fmt.Printf("Change TEST_INT from %v to %v\n", TEST_INT, intMap["TEST_INT"])
 	// save config to conf
-	multiConfig.SetValue("TEST_INTLIST", []int{7, 8, 9, 10}, "")
+	multiConfig.SetValue("TEST_INTLIST", []int{7, 8, 9, 10, 11}, "")
 	fmt.Printf("Change TEST_INT from %v to %v\n", TEST_INTLIST, intListMap["TEST_INTLIST"])
+	// Set sring
+	multiConfig.SetValue("TEST_STRING", "78911a", "")
+	fmt.Printf("Change TEST_INT from %v to %v\n", TEST_STRING, stringMap["TEST_STRING"])
 	multiConfig.FlushToConfig()
 }
 
